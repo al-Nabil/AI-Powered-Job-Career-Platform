@@ -1,0 +1,33 @@
+Folder Structure Setup
+
+ai-job-platform/
+│
+├── client/                     # Frontend App (React.js + Tailwind CSS)
+│
+├── server/                     # Backend App (Node.js + Express + MongoDB)
+│   ├── config/
+│   │   ├── db.js               # Database Connection
+│   │   └── cloudinary.js       # Cloudinary Integration Config
+│   ├── controllers/
+│   │   ├── authController.js   # Auth Logic (Register, Login, Me, etc.)
+│   │   └── userController.js   # Profile & User Management
+│   ├── middleware/
+│   │   ├── authMiddleware.js   # JWT verification & Role guards
+│   │   └── errorMiddleware.js  # Global error handler
+│   ├── models/
+│   │   ├── User.js             # User Schema
+│   │   ├── CandidateProfile.js # Candidate Profile Schema
+│   │   └── EmployerProfile.js  # Employer Profile Schema
+│   ├── routes/
+│   │   ├── authRoutes.js       # Authentication Endpoints
+│   │   └── userRoutes.js       # User Management Endpoints
+│   ├── utils/
+│   │   └── generateToken.js    # JWT Generator helper
+│   ├── validators/
+│   │   └── authValidator.js    # Input Validations (Zod/Joi)
+│   ├── .env.example            # Environment variables format
+│   ├── package.json
+│   └── server.js               # Main Backend Server Entry
+│
+├── .gitignore
+└── README.md
