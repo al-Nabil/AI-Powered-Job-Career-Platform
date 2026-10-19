@@ -26,6 +26,10 @@ app.use(
 );
 
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/jobs', require('./routes/jobRoutes'));
+
+app.use('/api/applications', require('./routes/applicationRoutes'));
+app.use('/api/saved-jobs', require('./routes/savedJobRoutes'));
 
 app.get('/', (req, res) => {
     res.status(200).json({
