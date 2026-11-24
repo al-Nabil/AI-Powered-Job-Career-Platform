@@ -1,8 +1,11 @@
-Photo/
-node_modules/
-# Environment variables
-.env
-.env.*
-!.env.example
+# node_modules/
+# # Photo
+# Photo/
 
-# Dependencies
+# # Dependencies
+# node_modules/
+
+# # Environment variables
+# .env
+# .env.*
+# !.env.example

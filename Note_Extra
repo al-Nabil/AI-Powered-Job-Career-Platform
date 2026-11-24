@@ -1,33 +1,165 @@
-Folder Structure Setup
+// Google Gemini API অথবা OpenAI API Client Integration
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-ai-job-platform/
-│
-├── client/                     # Frontend App (React.js + Tailwind CSS)
-│
-├── server/                     # Backend App (Node.js + Express + MongoDB)
-│   ├── config/
-│   │   ├── db.js               # Database Connection
-│   │   └── cloudinary.js       # Cloudinary Integration Config
-│   ├── controllers/
-│   │   ├── authController.js   # Auth Logic (Register, Login, Me, etc.)
-│   │   └── userController.js   # Profile & User Management
-│   ├── middleware/
-│   │   ├── authMiddleware.js   # JWT verification & Role guards
-│   │   └── errorMiddleware.js  # Global error handler
-│   ├── models/
-│   │   ├── User.js             # User Schema
-│   │   ├── CandidateProfile.js # Candidate Profile Schema
-│   │   └── EmployerProfile.js  # Employer Profile Schema
-│   ├── routes/
-│   │   ├── authRoutes.js       # Authentication Endpoints
-│   │   └── userRoutes.js       # User Management Endpoints
-│   ├── utils/
-│   │   └── generateToken.js    # JWT Generator helper
-│   ├── validators/
-│   │   └── authValidator.js    # Input Validations (Zod/Joi)
-│   ├── .env.example            # Environment variables format
-│   ├── package.json
-│   └── server.js               # Main Backend Server Entry
-│
-├── .gitignore
-└── README.md
+// env থেকে AI Key ব্যবহার করা হচ্ছে
+const genAI = 
+new GoogleGenerativeAI(process.env.AI_API_KEY || '');
+
+// AI JSON Response Parsing Helper (Clean Markdown ```json formatting)
+const cleanAndParseJSON = (text) => {
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error(
+        'Failed to parse AI response into structured JSON format');
+  }
+};
+
+// ১. AI CV Analysis Logic
+exports.analyzeCVService = async (candidateData) => {
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-1.5-flash' });
+
+  const prompt = `
+  You are an expert HR Specialist and ATS Engine. 
+  Analyze the following candidate profile details and 
+  provide feedback.
+  
+  Candidate Profile:
+  ${JSON.stringify(candidateData)}
+
+  Provide a structured JSON output with exact format:
+  {
+    "overallScore": 85,
+    "strengths": ["Strength 1", "Strength 2"],
+    "weaknesses": ["Weakness 1", "Weakness 2"],
+    "suggestions": ["Suggestion 1", "Suggestion 2"]
+  }
+  Respond strictly in valid JSON format.
+  `;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return cleanAndParseJSON(response.text());
+};
+
+// ২. CV -> Job Matcher Engine
+exports.matchJobService = async 
+(candidateSkills, jobRequirements) => {
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-1.5-flash' });
+
+  const prompt = `
+  Compare Candidate Skills against Job Requirements and 
+  output a match percentage with skill breakdown.
+
+  Candidate Skills: ${JSON.stringify(candidateSkills)}
+  Job Requirements & Skills: ${JSON.stringify(jobRequirements)}
+
+  Return strict JSON in this format:
+  {
+    "matchScore": 87,
+    "matchingSkills": ["Skill 1", "Skill 2"],
+    "missingSkills": ["Skill A", "Skill B"],
+    "recommendation": "Strong candidate for this role."
+  }
+  `;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return cleanAndParseJSON(response.text());
+};
+
+// ৩. Job Description Analyzer (For Employer)
+exports.analyzeJDService = async (jobDescription) => {
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-1.5-flash' });
+
+  const prompt = `
+  Analyze this Job Description for clarity, missing skills, 
+  bias, and quality score.
+
+  Job Description: ${jobDescription}
+
+  Return strict JSON in this format:
+  {
+    "qualityScore": 90,
+    "clarity": "High",
+    "missingInformation": ["Salary range", 
+    "Work experience detail"],
+    "suggestions": ["Add expected experience", 
+    "Clarify responsibilities"]
+  }
+  `;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return cleanAndParseJSON(response.text());
+};
+
+// ৪. AI Cover Letter Generator
+exports.generateCoverLetterService = async 
+(candidateProfile, jobDetails, tone = 'Professional') => {
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-1.5-flash' });
+
+  const prompt = `
+  Write a highly tailored and persuasive Cover Letter in ${tone} tone based on:
+  Candidate Details: ${JSON.stringify(candidateProfile)}
+  Target Job Details: ${JSON.stringify(jobDetails)}
+
+  Return ONLY plain text of the cover letter with proper spacing.
+  `;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return response.text().trim();
+};
+
+// ৫. AI Skill Gap Analysis
+exports.analyzeSkillGapService = async (currentSkills, targetJobSkills) => {
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+  const prompt = `
+  Perform a Skill Gap Analysis by comparing Candidate Skills with Target Job Skills.
+
+  Current Candidate Skills: ${JSON.stringify(currentSkills)}
+  Target Job Required Skills: ${JSON.stringify(targetJobSkills)}
+
+  Return strict JSON format:
+  {
+    "alreadyHave": ["React", "JavaScript"],
+    "needToLearn": ["Docker", "AWS", "Redis"],
+    "recommendedLearningOrder": ["Docker", "Redis", "AWS"]
+  }
+  `;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return cleanAndParseJSON(response.text());
+};
+
+// ৬. AI Interview Question Generator
+exports.generateInterviewQuestionsService = async (jobTitle, skills, difficulty = 'Medium') => {
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+  const prompt = `
+  Generate interview practice questions for a ${difficulty} level ${jobTitle} role requiring skills: ${skills.join(', ')}.
+
+  Return strict JSON format:
+  {
+    "technicalQuestions": ["Q1", "Q2"],
+    "behavioralQuestions": ["Q1", "Q2"],
+    "hrQuestions": ["Q1"],
+    "scenarioQuestions": ["Q1"]
+  }
+  `;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return cleanAndParseJSON(response.text());
+};
